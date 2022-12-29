@@ -1,0 +1,11 @@
+Doc for argparse:
+https://docs.python.org/3/library/argparse.html
+
+Doc for Numpy:
+https://numpy.org/doc/stable/
+
+Wiki for Linear Regression: 
+https://en.wikipedia.org/wiki/Linear_regression
+
+Lectures from MIT (You can start from lecture 21 until the end):
+https://ocw.mit.edu/courses/6-041-probabilistic-systems-analysis-and-applied-probability-fall-2010/video_galleries/video-lectures/
