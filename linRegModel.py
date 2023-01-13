@@ -23,12 +23,19 @@ DEBUG = 1
 X = [0,1,2,3,4,5,6,7,8,9,10]
 Y = [0,2,4,6,8,10,12,14,16,18,20]
 
-def findMean (setData):     #This will find the estimated mean of the data set
+def findMean (setData, setData2 = None):     #This will find the estimated mean of the data set
     #Formula: μ = Σ(Xi)/n , where μ is mean, Xi is a data point, n is the number of Xi elements
-    mean = 0
-    for i in setData:
-        mean += i
-    return mean/len(setData)
+    if setData2 is None:
+        mean = 0
+        for i in setData:
+            mean += i
+        return mean/len(setData)
+
+    else: #this assumes that the length of setData and setData2 have the same length
+        for x,y in zip(setData,setData2):
+            mean += x*y
+        return mean/len(setData)
+
 
 def findVariance(setData, mean = None): #This will find the estimated variance of the data set
     #Formula: σ^2 = (Σ(Xi - μ)^2) / (n-1) , where σ^2 is variance, μ is the mean of the set data, Xi is a data point, n is the number of Xi elements 
@@ -42,8 +49,8 @@ def findVariance(setData, mean = None): #This will find the estimated variance o
     return variance/(len(setData) -1)
 
 
-def linearRegBasic(setX,setY): #returns a list in the form [m,b] for y=mx+b
-    #Formula: θm = (Σ((Xi - μx)*(Yi - μy)) / Σ(Xi -μx)^2 )
+def linReg_basic(setX,setY): #returns a list in the form [m,b] for y=mx+b
+    #Formula: θm = (Σ((Xi - μx)*(Yi - μy)) / Σ(Xi -μx)^2 ) This is just Cov(x,y)/ var(x) just simplified
     #         θb = μy - θm*μx
     meanX = findMean(setX)
     meanY = findMean(setY)
@@ -61,7 +68,27 @@ def linearRegBasic(setX,setY): #returns a list in the form [m,b] for y=mx+b
 
     return[thetaM, thetaB]
     
+def linReg_multiVar(dataSet,resultSet): 
+    #dataSet will be 2D array (2xn matrix) with each row representing an independent variable. 
+    #resultSet will be an 1D array (n-D vector) with the value that we are trying to predict.
 
+    #LOGIC
+    #   In this function we assume that the result set can be repesented by:
+    #       Yi = θa + θbXi + θcZi ... + θnΦi + Wi, where Xi,Zi...,Φi are independent and Wi is ~ N(0,σ^2)
+    #   We wil then use the most likely estimator and try to maximize the θ's by:
+    #       min((Σ Yi -θa - θbXi - θcZi ... - θnΦi)^2) 
+    #   The resulting matrix after derivation and setting the left side to zero is:
+    #       |1  μx      μz     ...   μΦ | |θa|   | μy  |
+    #       |μx E[X^2]  E[XZ]  ... E[XΦ]| |θb|   |E[XY]|
+    #       |μz E[XZ]   E[Z^2] ... E[ZΦ]| |θc| = |E[YZ]|
+    #       |.   .       .           .  | | .|   |  .  |
+    #       |.   .       .           .  | | .|   |  .  |
+    #       |.   .       .           .  | | .|   |  .  |
+    #       |μΦ E[XΦ]   E[ZΦ]  ...E[Φ^2]| |θΦ|   |E[YΦ]|
+    #
+    #   Solving this can be done using numpy. 
+
+    return 
 if DEBUG :
     print("IN DEBUG MODE")
 
@@ -71,7 +98,7 @@ if DEBUG :
     print("VARIANCE OF X IS: " , findVariance(X))
     print("VARIANCE OF Y IS: " , findVariance(Y))
 
-    temp = linearRegBasic(X,Y)
+    temp = linReg_basic(X,Y)
 
     print("M OF LIN_REG IS: ",temp[0])
     print("B OF LIN_REG IS: ",temp[1])
