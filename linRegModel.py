@@ -22,11 +22,12 @@ import argparse
 DEBUG = 1
 X = [0,1,2,3,4,5,6,7,8,9,10]
 Y = [0,2,4,6,8,10,12,14,16,18,20]
+Z = [0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10]
 
 def findMean (setData, setData2 = None):     #This will find the estimated mean of the data set
     #Formula: μ = Σ(Xi)/n , where μ is mean, Xi is a data point, n is the number of Xi elements
+    mean = 0
     if setData2 is None:
-        mean = 0
         for i in setData:
             mean += i
         return mean/len(setData)
@@ -69,7 +70,7 @@ def linReg_basic(setX,setY): #returns a list in the form [m,b] for y=mx+b
     return[thetaM, thetaB]
     
 def linReg_multiVar(dataSet,resultSet): 
-    #dataSet will be 2D array (2xn matrix) with each row representing an independent variable. 
+    #dataSet will be 2D array (2xn matrix) with each row representing the data points of an independent variable. 
     #resultSet will be an 1D array (n-D vector) with the value that we are trying to predict.
 
     #LOGIC
@@ -87,9 +88,36 @@ def linReg_multiVar(dataSet,resultSet):
     #       |μΦ E[XΦ]   E[ZΦ]  ...E[Φ^2]| |θΦ|   |E[YΦ]|
     #
     #   Solving this can be done using numpy. 
+    
+    #setting up the matrix shown above
+    matrix = []
+    y_vector = []
+    temp = []
 
-    return 
+    #first row setup
+    for j in range(-1,len(dataSet)):
+        if j == -1:
+            temp.append(1)
+        else:
+            temp.append(findMean(dataSet[j]))
+
+    y_vector.append(findMean(resultSet))
+
+    matrix.append(temp)
+
+    for i in range(len(dataSet)):
+        for j in range(-1,len(dataSet)):
+            if j == -1:
+                temp.append(findMean(dataSet[i]))
+            else:
+                temp.append(findMean(dataSet[i],dataSet[j]))
+
+        matrix.append(temp)
+        y_vector.append(findMean(resultSet,dataSet[i]))
+
+    return [matrix,y_vector]
 if DEBUG :
+
     print("IN DEBUG MODE")
 
     print("MEAN OF X IS: " , findMean(X))
@@ -102,3 +130,9 @@ if DEBUG :
 
     print("M OF LIN_REG IS: ",temp[0])
     print("B OF LIN_REG IS: ",temp[1])
+
+    temp = linReg_multiVar([X,Z],Y)
+
+    print(temp[0])
+    print(temp[1])
+
