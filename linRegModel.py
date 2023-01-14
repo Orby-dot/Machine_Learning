@@ -78,7 +78,7 @@ def linReg_multiVar(dataSet,resultSet):
     #       Yi = θa + θbXi + θcZi ... + θnΦi + Wi, where Xi,Zi...,Φi are independent and Wi is ~ N(0,σ^2)
     #   We wil then use the most likely estimator and try to maximize the θ's by:
     #       min((Σ Yi -θa - θbXi - θcZi ... - θnΦi)^2) 
-    #   The resulting matrix after derivation and setting the left side to zero is:
+    #   The resulting matrix after derivation and setting to zero is:
     #       |1  μx      μz     ...   μΦ | |θa|   | μy  |
     #       |μx E[X^2]  E[XZ]  ... E[XΦ]| |θb|   |E[XY]|
     #       |μz E[XZ]   E[Z^2] ... E[ZΦ]| |θc| = |E[YZ]|
@@ -89,7 +89,7 @@ def linReg_multiVar(dataSet,resultSet):
     #
     #   Solving this can be done using numpy. 
     
-    #setting up the matrix shown above
+    #setting up the matrix and the Y-vector shown above
     matrix = []
     y_vector = []
     temp = []
@@ -104,6 +104,7 @@ def linReg_multiVar(dataSet,resultSet):
     y_vector.append(findMean(resultSet))
 
     matrix.append(temp)
+    temp = []
 
     for i in range(len(dataSet)):
         for j in range(-1,len(dataSet)):
@@ -113,6 +114,7 @@ def linReg_multiVar(dataSet,resultSet):
                 temp.append(findMean(dataSet[i],dataSet[j]))
 
         matrix.append(temp)
+        temp = []
         y_vector.append(findMean(resultSet,dataSet[i]))
 
     return [matrix,y_vector]
