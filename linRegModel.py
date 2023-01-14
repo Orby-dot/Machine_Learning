@@ -15,14 +15,15 @@
 ##WARNING
 #   CORRELATION IS NOT CAUSATION. PLEASE KEEP THIS IN MIND WHEN YOU ARE USING THIS MODEL.
 #Packages: Limited
-import numpy
+from numpy import linalg
+import numpy as np
 import argparse
 
 #Debug variables
 DEBUG = 1
 X = [0,1,2,3,4,5,6,7,8,9,10]
 Y = [0,2,4,6,8,10,12,14,16,18,20]
-Z = [0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10]
+Z = [0,-.1,-24,-21,2,8,9,.74,-12,-20,10]
 
 def findMean (setData, setData2 = None):     #This will find the estimated mean of the data set
     #Formula: μ = Σ(Xi)/n , where μ is mean, Xi is a data point, n is the number of Xi elements
@@ -117,7 +118,8 @@ def linReg_multiVar(dataSet,resultSet):
         temp = []
         y_vector.append(findMean(resultSet,dataSet[i]))
 
-    return [matrix,y_vector]
+    return linalg.solve(matrix,y_vector)
+
 if DEBUG :
 
     print("IN DEBUG MODE")
@@ -133,8 +135,9 @@ if DEBUG :
     print("M OF LIN_REG IS: ",temp[0])
     print("B OF LIN_REG IS: ",temp[1])
 
+    print("OUTPUTING MATRIX OF MULTIVAR VERSION")
+
     temp = linReg_multiVar([X,Z],Y)
 
-    print(temp[0])
-    print(temp[1])
+    print(temp)
 
