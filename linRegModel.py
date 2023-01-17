@@ -50,75 +50,92 @@ def findVariance(setData, mean = None): #This will find the estimated variance o
     
     return variance/(len(setData) -1)
 
+def findCorrelation(setX,setY):
+    #Formula: Cov(X,Y) = E[XY] - E[X]E[Y]
+    return findMean(setX,setY) - findMean(setX)*findMean(setY)
 
-def linReg_basic(setX,setY): #returns a list in the form [m,b] for y=mx+b
-    #Formula: θm = (Σ((Xi - μx)*(Yi - μy)) / Σ(Xi -μx)^2 ) This is just Cov(x,y)/ var(x) just simplified
-    #         θb = μy - θm*μx
-    meanX = findMean(setX)
-    meanY = findMean(setY)
-    #varX = findVariance(setX,meanX)
+class linReg:
+        
+    def basic(setX,setY): #returns a list in the form [m,b] for y=mx+b
+        #Formula: θm = (Σ((Xi - μx)*(Yi - μy)) / Σ(Xi -μx)^2 ) This is just Cov(x,y)/ var(x) just simplified
+        #         θb = μy - θm*μx
+        meanX = findMean(setX)
+        meanY = findMean(setY)
+        #varX = findVariance(setX,meanX)
 
-    thetaM = 0
-    tempX = 0
-    for x,y in zip(setX,setY): #zip just combines the two arrays so i can traverse both at the same time
-        thetaM += (x - meanX)*(y-meanY)
-        tempX += (x - meanX)**2
+        thetaM = 0
+        tempX = 0
+        for x,y in zip(setX,setY): #zip just combines the two arrays so i can traverse both at the same time
+            thetaM += (x - meanX)*(y-meanY)
+            tempX += (x - meanX)**2
 
-    thetaM = thetaM/ tempX
+        thetaM = thetaM/ tempX
 
-    thetaB = meanY - thetaM*meanX
+        thetaB = meanY - thetaM*meanX
 
-    return[thetaM, thetaB]
-    
-def linReg_multiVar(dataSet,resultSet): 
-    #dataSet will be 2D array (2xn matrix) with each row representing the data points of an independent variable. 
-    #resultSet will be an 1D array (n-D vector) with the value that we are trying to predict.
+        return[thetaM, thetaB]
+        
+    def multiVar(dataSet,resultSet): 
+        #dataSet will be 2D array (2xn matrix) with each row representing the data points of an independent variable. 
+        #resultSet will be an 1D array (n-D vector) with the value that we are trying to predict.
 
-    #LOGIC
-    #   In this function we assume that the result set can be repesented by:
-    #       Yi = θa + θbXi + θcZi ... + θnΦi + Wi, where Xi,Zi...,Φi are independent and Wi is ~ N(0,σ^2)
-    #   We wil then use the most likely estimator and try to maximize the θ's by:
-    #       min((Σ Yi -θa - θbXi - θcZi ... - θnΦi)^2) 
-    #   The resulting matrix after derivation and setting to zero is:
-    #       |1  μx      μz     ...   μΦ | |θa|   | μy  |
-    #       |μx E[X^2]  E[XZ]  ... E[XΦ]| |θb|   |E[XY]|
-    #       |μz E[XZ]   E[Z^2] ... E[ZΦ]| |θc| = |E[YZ]|
-    #       |.   .       .           .  | | .|   |  .  |
-    #       |.   .       .           .  | | .|   |  .  |
-    #       |.   .       .           .  | | .|   |  .  |
-    #       |μΦ E[XΦ]   E[ZΦ]  ...E[Φ^2]| |θΦ|   |E[YΦ]|
-    #
-    #   Solving this can be done using numpy. 
-    
-    #setting up the matrix and the Y-vector shown above
-    matrix = []
-    y_vector = []
-    temp = []
+        #LOGIC
+        #   In this function we assume that the result set can be repesented by:
+        #       Yi = θa + θbXi + θcZi ... + θnΦi + Wi, where Xi,Zi...,Φi are independent and Wi is ~ N(0,σ^2)
+        #   We wil then use the most likely estimator and try to maximize the θ's by:
+        #       min((Σ Yi -θa - θbXi - θcZi ... - θnΦi)^2) 
+        #   The resulting matrix after derivation and setting to zero is:
+        #       |1  μx      μz     ...   μΦ | |θa|   | μy  |
+        #       |μx E[X^2]  E[XZ]  ... E[XΦ]| |θb|   |E[XY]|
+        #       |μz E[XZ]   E[Z^2] ... E[ZΦ]| |θc| = |E[YZ]|
+        #       |.   .       .           .  | | .|   |  .  |
+        #       |.   .       .           .  | | .|   |  .  |
+        #       |.   .       .           .  | | .|   |  .  |
+        #       |μΦ E[XΦ]   E[ZΦ]  ...E[Φ^2]| |θΦ|   |E[YΦ]|
+        #
+        #   Solving this can be done using numpy. 
+        
+        #setting up the matrix and the Y-vector shown above
+        matrix = []
+        y_vector = []
+        temp = []
 
-    #first row setup
-    for j in range(-1,len(dataSet)):
-        if j == -1:
-            temp.append(1)
-        else:
-            temp.append(findMean(dataSet[j]))
-
-    y_vector.append(findMean(resultSet))
-
-    matrix.append(temp)
-    temp = []
-
-    for i in range(len(dataSet)):
+        #first row setup
         for j in range(-1,len(dataSet)):
             if j == -1:
-                temp.append(findMean(dataSet[i]))
+                temp.append(1)
             else:
-                temp.append(findMean(dataSet[i],dataSet[j]))
+                temp.append(findMean(dataSet[j]))
+
+        y_vector.append(findMean(resultSet))
 
         matrix.append(temp)
         temp = []
-        y_vector.append(findMean(resultSet,dataSet[i]))
 
-    return linalg.solve(matrix,y_vector)
+        for i in range(len(dataSet)):
+            for j in range(-1,len(dataSet)):
+                if j == -1:
+                    temp.append(findMean(dataSet[i]))
+                else:
+                    temp.append(findMean(dataSet[i],dataSet[j]))
+
+            matrix.append(temp)
+            temp = []
+            y_vector.append(findMean(resultSet,dataSet[i]))
+
+        return linalg.solve(matrix,y_vector)
+
+    def nDegree(dataSet,resultSet,degree):
+        modifiedArr = []
+        for i in dataSet:
+            modifiedArr.append(i**degree)
+
+        thetaM = findCorrelation(modifiedArr,resultSet) / findVariance(modifiedArr)
+
+        thetaB = findMean(resultSet) - thetaM * findMean(modifiedArr)
+
+        return [thetaM,thetaB]
+
 
 if DEBUG :
 
@@ -130,14 +147,14 @@ if DEBUG :
     print("VARIANCE OF X IS: " , findVariance(X))
     print("VARIANCE OF Y IS: " , findVariance(Y))
 
-    temp = linReg_basic(X,Y)
+    temp = linReg.basic(X,Y)
 
     print("M OF LIN_REG IS: ",temp[0])
     print("B OF LIN_REG IS: ",temp[1])
 
-    print("OUTPUTING MATRIX OF MULTIVAR VERSION")
+    print("OUTPUTING THETA'S OF MULTIVAR STEP")
 
-    temp = linReg_multiVar([X,Z],Y)
+    temp = linReg.multiVar([X,Z],Y)
 
     print(temp)
 
