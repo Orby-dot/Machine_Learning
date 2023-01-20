@@ -2,7 +2,7 @@
 
 #Purpose: To predict outcome of data under the assumption:
 #   1: The observation is linearly correlated to the desired paramter
-#   2: There is some noise W ~ N(0,u^2)
+#   2: There is some noise W ~ N(0,σ^2)
 #   3: The model will be of the form: Y = a + bX where Y is the desired paramter and X is the observation
 
 #Goal: To find a and b in the above equation
@@ -19,11 +19,31 @@ from numpy import linalg
 import numpy as np
 import argparse
 
+#testing scripts for debugging
+testScript = True
+try:
+    import scripts.lineCreation as line
+except ImportError:
+    testScript = False
+
 #Debug variables
 DEBUG = 1
-X = [0,1,2,3,4,5,6,7,8,9,10]
-Y = [0,2,4,6,8,10,12,14,16,18,20]
-Z = [0,-.1,-24,-21,2,8,9,.74,-12,-20,10]
+N = 50
+STD_DEV = 5
+MEANX = 9
+VARX = 2
+X = [0,1, 2, 3, 4, 5, 6, 7, 8, 9,10]
+Y = [4,7,10,13,16,19,22,25,28,31,34]
+Z = [2,3, 4, 5, 6, 7, 8, 9,10,11,12]
+
+def turnToSets(data):
+    x=[]
+    y=[]
+    for i in data:
+        x.append(i[0])
+        y.append(i[1])
+
+    return [x,y]
 
 def findMean (setData, setData2 = None):     #This will find the estimated mean of the data set
     #Formula: μ = Σ(Xi)/n , where μ is mean, Xi is a data point, n is the number of Xi elements
@@ -61,7 +81,6 @@ class linReg:
         #         θb = μy - θm*μx
         meanX = findMean(setX)
         meanY = findMean(setY)
-        #varX = findVariance(setX,meanX)
 
         thetaM = 0
         tempX = 0
@@ -126,6 +145,9 @@ class linReg:
         return linalg.solve(matrix,y_vector)
 
     def nDegree(dataSet,resultSet,degree):
+        #Formula: θm = Cov(g(x),y)/ var(g(x))
+        #         θb = μy - θm*μ(g(x))
+        #         Where g(x) is in the form: g(x) = x^k
         modifiedArr = []
         for i in dataSet:
             modifiedArr.append(i**degree)
@@ -140,21 +162,77 @@ class linReg:
 if DEBUG :
 
     print("IN DEBUG MODE")
+    print("CHECKING IF TEST SCRIPTS ARE IN SUB_DIRECTORY")
 
-    print("MEAN OF X IS: " , findMean(X))
-    print("MEAN OF Y IS: " , findMean(Y))
+    if testScript:
+        print("FOUND TESTING SCRIPTS")
+        print("CREATING A SERIES OF BASIC TESTS")
 
-    print("VARIANCE OF X IS: " , findVariance(X))
-    print("VARIANCE OF Y IS: " , findVariance(Y))
+        tests = []
 
-    temp = linReg.basic(X,Y)
+        for i in range(1,10):
+            tests.append(turnToSets(line.lineSet.basic(i,i+2,N)))
+            print('.',end = "")
+        print('')
 
-    print("M OF LIN_REG IS: ",temp[0])
-    print("B OF LIN_REG IS: ",temp[1])
+        print("TESTING MEAN")
+        for i in range(1,10):
+            if findMean(tests[i-1][0]) != (N-1)/2:
+                print("FAILED MEAN! @", i)
+            else:
+                print('.',end = "")
+        print('')        
 
-    print("OUTPUTING THETA'S OF MULTIVAR STEP")
+        print("TESTING BASIC LIN REG")
+        for i in range(1,10):
+            temp = linReg.basic(tests[i-1][0],tests[i-1][1])
 
-    temp = linReg.multiVar([X,Z],Y)
+            print("@",i," M OF LIN_REG IS: ",temp[0], end = " ")
+            print("B OF LIN_REG IS: ",temp[1])
+            
+            if temp[0] != i or temp[1] != i+2:
+                print("FAILED @", i , " THE CORRECT ANSWER IS: m=", i, ", b=", i+2)
 
-    print(temp)
+
+
+
+        print("CREATING A SERIES OF NORMAL TESTS")
+        tests = []
+
+        for i in range(1,10):
+            tests.append(turnToSets(line.lineSet.normal(i,i+2,N,STD_DEV)))
+            print('.',end = "")
+        print('')
+
+        print("TESTING BASIC LIN REG")
+        for i in range(1,10):
+            temp = linReg.basic(tests[i-1][0],tests[i-1][1])
+
+            print("@",i," M OF LIN_REG IS: ",round(float(temp[0]),3), end = " ")
+            print("B OF LIN_REG IS: ",round(float(temp[1]),3))
+            
+            print("@",i,"THE % ERROR OF M IS: ", round(float((abs(temp[0] - i)/i) * 100),3),  "%. The % ERROR OF B IS:", round(float((abs(temp[1] - i+2)/(i+2))*100),3))
+
+        
+
+    else:
+        print("CANNOT FIND SCRIPT. DEBUG WILL GO WITH HARDCODED VALUE")
+        print("MEAN OF X IS: " , findMean(X))
+        print("MEAN OF Y IS: " , findMean(Y))
+        print("MEAN OF Z IS: " , findMean(Z))
+
+        print("VARIANCE OF X IS: " , findVariance(X))
+        print("VARIANCE OF Y IS: " , findVariance(Y))
+        print("VARIANCE OF Y IS: " , findVariance(Z))
+
+        temp = linReg.basic(X,Y)
+
+        print("M OF BASIC LIN_REG IS: ",temp[0])
+        print("B OF BASIC LIN_REG IS: ",temp[1])
+
+        print("OUTPUTING THETA'S OF Y = A*X + B*Z + C")
+
+        temp = linReg.multiVar([X,Z],Y)
+
+        print(temp)
 
