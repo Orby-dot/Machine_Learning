@@ -28,10 +28,13 @@ except ImportError:
 
 #Debug variables
 DEBUG = 1
-N = 50
-STD_DEV = 5
-MEANX = 9
-VARX = 2
+N = 20
+TESTS = 10
+STD_DEV = 2
+MEANX = 0
+VARX = 10
+PORTION = .5
+
 X = [0,1, 2, 3, 4, 5, 6, 7, 8, 9,10]
 Y = [4,7,10,13,16,19,22,25,28,31,34]
 Z = [2,3, 4, 5, 6, 7, 8, 9,10,11,12]
@@ -44,6 +47,24 @@ def turnToSets(data):
         y.append(i[1])
 
     return [x,y]
+
+def testBasicSets(set,portion):
+    accuracy = 0
+
+    trainingSet = []
+    trainingSet.append(set[0][0:int(len(set[0])*portion)])
+    trainingSet.append(set[1][0:int(len(set[1])*portion)])
+
+    testingSet = []
+    testingSet.append(set[0][int(len(set[0])*portion):])
+    testingSet.append(set[1][int(len(set[1])*portion):])
+
+    params = linReg.basic(trainingSet[0],trainingSet[1])
+
+    for i in range(0,len(testingSet[1])):
+        accuracy += abs(testingSet[1][i] - (testingSet[0][i] * params[0] + params[1]))/abs(testingSet[1][i])
+    print(accuracy)
+    return 1 - (accuracy/len(testingSet[1]))
 
 def findMean (setData, setData2 = None):     #This will find the estimated mean of the data set
     #Formula: μ = Σ(Xi)/n , where μ is mean, Xi is a data point, n is the number of Xi elements
@@ -170,50 +191,44 @@ if DEBUG :
 
         tests = []
 
-        for i in range(1,10):
+        for i in range(1,TESTS +1):
             tests.append(turnToSets(line.lineSet.basic(i,i+2,N)))
             print('.',end = "")
         print('')
 
-        print("TESTING MEAN")
-        for i in range(1,10):
-            if findMean(tests[i-1][0]) != (N-1)/2:
-                print("FAILED MEAN! @", i)
-            else:
-                print('.',end = "")
-        print('')        
-
         print("TESTING BASIC LIN REG")
-        for i in range(1,10):
-            temp = linReg.basic(tests[i-1][0],tests[i-1][1])
+        for i in range(0,TESTS):
+            acc = testBasicSets(tests[i],PORTION)
+            print("Accuracy @",i, " is:", acc)
+        #--------------------------------------------------------
 
-            print("@",i," M OF LIN_REG IS: ",temp[0], end = " ")
-            print("B OF LIN_REG IS: ",temp[1])
-            
-            if temp[0] != i or temp[1] != i+2:
-                print("FAILED @", i , " THE CORRECT ANSWER IS: m=", i, ", b=", i+2)
-
-
-
-
+        print('')
         print("CREATING A SERIES OF NORMAL TESTS")
         tests = []
 
-        for i in range(1,10):
+        for i in range(1,TESTS+1):
             tests.append(turnToSets(line.lineSet.normal(i,i+2,N,STD_DEV)))
             print('.',end = "")
         print('')
 
         print("TESTING BASIC LIN REG")
-        for i in range(1,10):
-            temp = linReg.basic(tests[i-1][0],tests[i-1][1])
+        for i in range(0,TESTS):
+            acc = testBasicSets(tests[i],PORTION)
+            print("Accuracy @",i, " is:", acc)
+        #--------------------------------------------------------
 
-            print("@",i," M OF LIN_REG IS: ",round(float(temp[0]),3), end = " ")
-            print("B OF LIN_REG IS: ",round(float(temp[1]),3))
-            
-            print("@",i,"THE % ERROR OF M IS: ", round(float((abs(temp[0] - i)/i) * 100),3),  "%. The % ERROR OF B IS:", round(float((abs(temp[1] - i+2)/(i+2))*100),3))
+        print('')
+        print("CREATING A SERIES OF CLUSTERED TESTS")
+        tests = []
 
-        
+        for i in range(1,TESTS+1):
+            tests.append(turnToSets(line.lineSet.clustered(i,i+2,N,STD_DEV,MEANX,VARX)))
+            print('.',end = "")
+        print('')
+        print("TESTING BASIC LIN REG")
+        for i in range(0,TESTS):
+            acc = testBasicSets(tests[i],PORTION)
+            print("Accuracy @",i, " is:", acc)
 
     else:
         print("CANNOT FIND SCRIPT. DEBUG WILL GO WITH HARDCODED VALUE")
