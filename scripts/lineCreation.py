@@ -53,5 +53,55 @@ class lineSet:
             result.append(point)
         return result
 
+class multiLineSet:
+    def basic(params,inital,n,std_dev = 0):
+        #Function: Creates a 2D array that holds "n" pairs of evenly spaced (x,..Φi,y) points
+        # with x's range [inital[0],inital[0] + n]... and Φi's range [inital[k],inital[k] + n]
+        # that directly map Yi = params[0] + params[1]Xi +  ... + params[k]Φi + Wi
+        result = []
+        for i in range(0,n):
+            point = []
+            yValue = params[0]
+            for k in range( 0,len(inital)):
+                point.append(inital[k]+i)
+                yValue += (inital[k]+i)*params[k+1]
+            point.append(yValue + random.normal(0,std_dev,1))
+
+            result.append(point)
+        return result
+
+    def step(params,inital,steps,n,std_dev = 0):
+         #Function: Creates a 2D array that holds "n" pairs of evenly spaced (x,..Φi,y) points
+         # with x's range [inital[0],inital[0] + n*steps[0]]... and Φi's range [inital[k],inital[k] + n*steps[k]]
+         #  that map Yi = params[0] + params[1]Xi +  ... + params[k]Φi + Wi
+        result = []
+        for i in range(0,n):
+            point = []
+            yValue = params[0]
+            for k in range( 0,len(inital)):
+                point.append(inital[k]+i*steps[k])
+                yValue += (inital[k]+i*steps[k])*params[k+1]
+            point.append(yValue + random.normal(0,std_dev,1))
+
+            result.append(point)
+        print(result[0])
+        return result
+
+
+    def clustered(params,mean,var,n,std_dev = 0):
+        #Function: Creates a 2D array that holds "n" pairs of clustered (x,z,y) points with X ~(μx,σx^2) and Z ~(μz,σz^2)
+        #          Y = aX + bZ + c + Wi, with Wi is i.i.d and Wi~ N(0,σ^2)
+        result =[]
+        for i in range(0,n):
+            point = []
+            yValue = params[0]
+            for k in range (0,len(mean)):
+                temp = random.normal(mean[k],var[k]**.5,1)
+                point.append(temp)
+                yValue += (temp)*params[k+1]
+            point.append(yValue + random.normal(0,std_dev,1))
+            result.append(point)
+        return result
+
 
 

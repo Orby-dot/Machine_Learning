@@ -28,25 +28,38 @@ except ImportError:
 
 #Debug variables
 DEBUG = 1
-N = 20
+N = 1000
 TESTS = 10
 STD_DEV = 2
 MEANX = 0
 VARX = 10
-PORTION = .5
+PORTION = .75
 
+VARNUM = 2
+SAMPLEMAX = 50
+SAMPLEMIN = -50
 X = [0,1, 2, 3, 4, 5, 6, 7, 8, 9,10]
 Y = [4,7,10,13,16,19,22,25,28,31,34]
 Z = [2,3, 4, 5, 6, 7, 8, 9,10,11,12]
 
-def turnToSets(data):
-    x=[]
-    y=[]
-    for i in data:
-        x.append(i[0])
-        y.append(i[1])
+#Deprecated
+# def turnToSets(data):
+#     x=[]
+#     y=[]
+#     for i in data:
+#         x.append(i[0])
+#         y.append(i[1])
 
-    return [x,y]
+#     return [x,y]
+
+
+def turnToSets(data):
+    result = [[] for i in range(len(data[0]))]
+    for i in range(0,len(data)):
+        for k in range(0,len(data[i])):
+            result[k].append(data[i][k])
+
+    return result
 
 def testBasicSets(set,portion):
     accuracy = 0
@@ -63,8 +76,30 @@ def testBasicSets(set,portion):
 
     for i in range(0,len(testingSet[1])):
         accuracy += abs(testingSet[1][i] - (testingSet[0][i] * params[0] + params[1]))/abs(testingSet[1][i])
-    print(accuracy)
     return 1 - (accuracy/len(testingSet[1]))
+
+def testMultiSet(set,portion):
+
+    accuracy = 0
+
+    trainingSet = []
+    testingSet = []
+    for i in range(VARNUM):
+        trainingSet.append(set[i][0:int(len(set[i])*portion)])
+        testingSet.append(set[i][int(len(set[i])*portion):])
+
+    params = linReg.multiVar(trainingSet[0:len(trainingSet)-2],trainingSet[-1])
+
+    for i in range(0,len(testingSet[-1])):
+
+        calYValue = params[0]
+        for k in range(0,len(testingSet)-2):
+            calYValue += params[k+1] * testingSet[k][i]
+        accuracy += abs(testingSet[-1][i] - calYValue)/abs(testingSet[-1][i])
+
+    return 1 - (accuracy/len(testingSet[0]))
+
+
 
 def findMean (setData, setData2 = None):     #This will find the estimated mean of the data set
     #Formula: μ = Σ(Xi)/n , where μ is mean, Xi is a data point, n is the number of Xi elements
@@ -229,6 +264,58 @@ if DEBUG :
         for i in range(0,TESTS):
             acc = testBasicSets(tests[i],PORTION)
             print("Accuracy @",i, " is:", acc)
+        #--------------------------------------------------------
+
+        print('')
+        print("CREATING A SERIES OF BASIC MULTIVARABLE TESTS")
+        tests = []
+
+        #creating points
+        for i in range(1,TESTS+1):
+
+            #generatating random starting params
+            params = [(SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN]
+            inital = []
+            for i in range(0,VARNUM):
+                params.append((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
+                inital.append ((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
+
+            tests.append(turnToSets(line.multiLineSet.basic(params,inital,N,STD_DEV)))
+            print('.',end = "")
+        print('')
+
+        print("TESTING MULTI LIN REG")
+        for i in range(0,TESTS):
+            acc = testMultiSet(tests[i],PORTION)
+            print("Accuracy @",i, " is:", acc)
+
+        #--------------------------------------------------------
+
+        print('')
+        print("CREATING A SERIES OF STEP MULTIVARABLE TESTS")
+        tests = []
+
+        #creating points
+        for i in range(1,TESTS+1):
+
+            #generatating random starting params
+            params = [(SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN]
+            inital = []
+            step = []
+            for i in range(0,VARNUM):
+                params.append((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
+                inital.append ((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
+                step.append ((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
+
+            tests.append(turnToSets(line.multiLineSet.step(params,inital,step,N,STD_DEV)))
+            print('.',end = "")
+        print('')
+
+        print("TESTING MULTI LIN REG")
+        for i in range(0,TESTS):
+            acc = testMultiSet(tests[i],PORTION)
+            print("Accuracy @",i, " is:", acc)
+
 
     else:
         print("CANNOT FIND SCRIPT. DEBUG WILL GO WITH HARDCODED VALUE")
