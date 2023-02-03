@@ -68,6 +68,7 @@ class multiLineSet:
             point.append(yValue + random.normal(0,std_dev,1))
 
             result.append(point)
+        #print(result)
         return result
 
     def step(params,inital,steps,n,std_dev = 0):
@@ -84,7 +85,6 @@ class multiLineSet:
             point.append(yValue + random.normal(0,std_dev,1))
 
             result.append(point)
-        print(result[0])
         return result
 
 
@@ -100,7 +100,6 @@ class multiLineSet:
                 point.append(temp)
                 yValue += (temp)*params[k+1]
             point.append(yValue + random.normal(0,std_dev,1))
-            result.append(point)
         return result
 
 

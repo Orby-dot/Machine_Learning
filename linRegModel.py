@@ -18,6 +18,7 @@
 from numpy import linalg
 import numpy as np
 import argparse
+import matplotlib.pyplot as plt
 
 #testing scripts for debugging
 testScript = True
@@ -28,19 +29,22 @@ except ImportError:
 
 #Debug variables
 DEBUG = 1
+HARDCODE = 0
 N = 1000
 TESTS = 10
-STD_DEV = 2
+STD_DEV = 500
 MEANX = 0
 VARX = 10
-PORTION = .75
+PORTION = .5
 
-VARNUM = 2
-SAMPLEMAX = 50
-SAMPLEMIN = -50
-X = [0,1, 2, 3, 4, 5, 6, 7, 8, 9,10]
-Y = [4,7,10,13,16,19,22,25,28,31,34]
-Z = [2,3, 4, 5, 6, 7, 8, 9,10,11,12]
+VARNUM = 5
+SAMPLEMAX = 10
+SAMPLEMIN = -10
+X = [0,1,2,3,4,5,6]
+Y = [15.5,23.5,12,4.5,-13,36,41]
+Z = [5,7,3,1,-5,6,10]
+A = [-1,-1,-4,5,6,10,8]
+B = [3,2,1,8,9,-4,3]
 
 #Deprecated
 # def turnToSets(data):
@@ -84,19 +88,30 @@ def testMultiSet(set,portion):
 
     trainingSet = []
     testingSet = []
-    for i in range(VARNUM):
+    for i in range(0,len(set)):
         trainingSet.append(set[i][0:int(len(set[i])*portion)])
         testingSet.append(set[i][int(len(set[i])*portion):])
 
-    params = linReg.multiVar(trainingSet[0:len(trainingSet)-2],trainingSet[-1])
+    # print("length of training set is", len(trainingSet))
+    # print("x training set is", trainingSet[0:len(trainingSet)-1])
+    # print("x training set is", trainingSet[-1])
+    Aparams = linReg.multiVar(trainingSet[0:len(trainingSet)-1],trainingSet[-1])
+    # print("CAL PARAMS:",Aparams)
 
     for i in range(0,len(testingSet[-1])):
+        #I hate pass by object
+        calYValue = Aparams[:]
+        calYValue = int(calYValue[0])
+        # print("CAL value = ", calYValue)
 
-        calYValue = params[0]
-        for k in range(0,len(testingSet)-2):
-            calYValue += params[k+1] * testingSet[k][i]
+        for k in range(0,len(testingSet)-1):
+            calYValue += Aparams[k+1] * testingSet[k][i]
+
+        # print("CAL value = ", calYValue)
+        # print("Atual value =",testingSet[-1][i])
         accuracy += abs(testingSet[-1][i] - calYValue)/abs(testingSet[-1][i])
-
+    # print("ACC",accuracy)
+    #print(accuracy/len(testingSet[0]))
     return 1 - (accuracy/len(testingSet[0]))
 
 
@@ -151,6 +166,7 @@ class linReg:
         return[thetaM, thetaB]
         
     def multiVar(dataSet,resultSet): 
+        #YEAH YOU DID MATH WRONG LOL FIX IT 
         #dataSet will be 2D array (2xn matrix) with each row representing the data points of an independent variable. 
         #resultSet will be an 1D array (n-D vector) with the value that we are trying to predict.
 
@@ -220,7 +236,7 @@ if DEBUG :
     print("IN DEBUG MODE")
     print("CHECKING IF TEST SCRIPTS ARE IN SUB_DIRECTORY")
 
-    if testScript:
+    if testScript and HARDCODE !=1:
         print("FOUND TESTING SCRIPTS")
         print("CREATING A SERIES OF BASIC TESTS")
 
@@ -276,14 +292,13 @@ if DEBUG :
             #generatating random starting params
             params = [(SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN]
             inital = []
-            for i in range(0,VARNUM):
+            for j in range(0,VARNUM):
                 params.append((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
                 inital.append ((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
-
+            # print("INIT PARAMS:",params)
             tests.append(turnToSets(line.multiLineSet.basic(params,inital,N,STD_DEV)))
             print('.',end = "")
         print('')
-
         print("TESTING MULTI LIN REG")
         for i in range(0,TESTS):
             acc = testMultiSet(tests[i],PORTION)
@@ -302,7 +317,7 @@ if DEBUG :
             params = [(SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN]
             inital = []
             step = []
-            for i in range(0,VARNUM):
+            for j in range(0,VARNUM):
                 params.append((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
                 inital.append ((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
                 step.append ((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
@@ -333,8 +348,11 @@ if DEBUG :
         print("B OF BASIC LIN_REG IS: ",temp[1])
 
         print("OUTPUTING THETA'S OF Y = A*X + B*Z + C")
+        ah = []
+        for i in range(0,len(X)):
+            ah.append(X[i] + 3*Z[i] + .5*A[i] - B[i] + 4)
 
-        temp = linReg.multiVar([X,Z],Y)
+        temp = linReg.multiVar([X,Z,A,B],ah)
 
         print(temp)
 
