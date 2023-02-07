@@ -8,6 +8,7 @@
 #Goal: To find a and b in the above equation
 
 #Extensions: To allow any polynomial or have multiple variables correlated to the desired parameter
+#NOTE THIS IS IMMPLEMENTED
 
 #Background info:
 #   Refer to directory called "Background Info"
@@ -16,9 +17,9 @@
 #   CORRELATION IS NOT CAUSATION. PLEASE KEEP THIS IN MIND WHEN YOU ARE USING THIS MODEL.
 #Packages: Limited
 from numpy import linalg
-import numpy as np
-import argparse
-import matplotlib.pyplot as plt
+import numpy as np #<-- for debugging
+import argparse #<-- might use for independent execution 
+import matplotlib.pyplot as plt #<-- for testing only
 
 #testing scripts for debugging
 testScript = True
@@ -30,32 +31,23 @@ except ImportError:
 #Debug variables
 DEBUG = 1
 HARDCODE = 0
-N = 1000
-TESTS = 10
-STD_DEV = 500
+N = 100000
+TESTS = 1
+STD_DEV = 5
 MEANX = 0
-VARX = 10
+VARX = 1000
 PORTION = .5
 
 VARNUM = 5
 SAMPLEMAX = 10
 SAMPLEMIN = -10
+
+#If lineCreation.py cant be found i will use these values
 X = [0,1,2,3,4,5,6]
 Y = [15.5,23.5,12,4.5,-13,36,41]
 Z = [5,7,3,1,-5,6,10]
 A = [-1,-1,-4,5,6,10,8]
 B = [3,2,1,8,9,-4,3]
-
-#Deprecated
-# def turnToSets(data):
-#     x=[]
-#     y=[]
-#     for i in data:
-#         x.append(i[0])
-#         y.append(i[1])
-
-#     return [x,y]
-
 
 def turnToSets(data):
     result = [[] for i in range(len(data[0]))]
@@ -65,9 +57,11 @@ def turnToSets(data):
 
     return result
 
+#For basic lin reg testing
 def testBasicSets(set,portion):
     accuracy = 0
 
+    #creating training and testing sets
     trainingSet = []
     trainingSet.append(set[0][0:int(len(set[0])*portion)])
     trainingSet.append(set[1][0:int(len(set[1])*portion)])
@@ -76,42 +70,40 @@ def testBasicSets(set,portion):
     testingSet.append(set[0][int(len(set[0])*portion):])
     testingSet.append(set[1][int(len(set[1])*portion):])
 
+    #Calculates the params of the training set
     params = linReg.basic(trainingSet[0],trainingSet[1])
 
+    #finds absolute % error
     for i in range(0,len(testingSet[1])):
         accuracy += abs(testingSet[1][i] - (testingSet[0][i] * params[0] + params[1]))/abs(testingSet[1][i])
     return 1 - (accuracy/len(testingSet[1]))
 
+#My testing function on multi var :D
 def testMultiSet(set,portion):
-
     accuracy = 0
-
     trainingSet = []
     testingSet = []
+
+    #Creates testing and training sets
     for i in range(0,len(set)):
         trainingSet.append(set[i][0:int(len(set[i])*portion)])
         testingSet.append(set[i][int(len(set[i])*portion):])
 
-    # print("length of training set is", len(trainingSet))
-    # print("x training set is", trainingSet[0:len(trainingSet)-1])
-    # print("x training set is", trainingSet[-1])
-    Aparams = linReg.multiVar(trainingSet[0:len(trainingSet)-1],trainingSet[-1])
-    # print("CAL PARAMS:",Aparams)
+    #Calculates the params of the training set
+    calParams = linReg.multiVar(trainingSet[0:len(trainingSet)-1],trainingSet[-1])
 
+    #finds absolute % error
     for i in range(0,len(testingSet[-1])):
-        #I hate pass by object
-        calYValue = Aparams[:]
+        #I hate pass by object reference
+        calYValue = calParams[:]
         calYValue = int(calYValue[0])
-        # print("CAL value = ", calYValue)
 
+        #Gets the cal-ed Y value
         for k in range(0,len(testingSet)-1):
-            calYValue += Aparams[k+1] * testingSet[k][i]
+            calYValue += calParams[k+1] * testingSet[k][i]
 
-        # print("CAL value = ", calYValue)
-        # print("Atual value =",testingSet[-1][i])
         accuracy += abs(testingSet[-1][i] - calYValue)/abs(testingSet[-1][i])
-    # print("ACC",accuracy)
-    #print(accuracy/len(testingSet[0]))
+
     return 1 - (accuracy/len(testingSet[0]))
 
 
@@ -295,11 +287,13 @@ if DEBUG :
             for j in range(0,VARNUM):
                 params.append((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
                 inital.append ((SAMPLEMAX - SAMPLEMIN)*np.random.random_sample() + SAMPLEMIN)
-            # print("INIT PARAMS:",params)
+
             tests.append(turnToSets(line.multiLineSet.basic(params,inital,N,STD_DEV)))
             print('.',end = "")
+
         print('')
         print("TESTING MULTI LIN REG")
+
         for i in range(0,TESTS):
             acc = testMultiSet(tests[i],PORTION)
             print("Accuracy @",i, " is:", acc)
@@ -324,9 +318,10 @@ if DEBUG :
 
             tests.append(turnToSets(line.multiLineSet.step(params,inital,step,N,STD_DEV)))
             print('.',end = "")
-        print('')
 
+        print('')
         print("TESTING MULTI LIN REG")
+
         for i in range(0,TESTS):
             acc = testMultiSet(tests[i],PORTION)
             print("Accuracy @",i, " is:", acc)
