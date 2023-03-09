@@ -20,8 +20,24 @@ import argparse #<-- might use for independent execution
 import matplotlib.pyplot as plt #<-- for testing only
 import math as m
 
+
+#testing scripts for debugging
+testScript = True
+try:
+    import scripts.sigmaCreation as sigma
+except ImportError:
+    testScript = False
+
 X = [0.5,.75,1,1.25,1.5,1.75,1.75,2,2.25,2.5,2.75,3,3.25,3.50,4,4.25,4.5,4.75,5,5.5]
 Y = [0,0,0,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1]
+
+def turnToSets(data):
+    result = [[] for i in range(len(data[0]))]
+    for i in range(0,len(data)):
+        for k in range(0,len(data[i])):
+            result[k].append(data[i][k])
+
+    return result
 
 def calKFunc(params,setX,n = 0):
         #The K function is the deriviative of P(Xi) with respect of a, multipled by Xi ^ n
@@ -65,14 +81,14 @@ def getNextMatrix(A,r,s):
 class logReg:
     
     def basic (setX,setY):
-        f = open("Debug.txt","w")
+        # f = open("Debug.txt","w")
         #Formula: a => 0 = ΣYi - P(Xi)
         #         b => 0 = ΣXi * (Yi - P(Xi))
         #I am going to use Broyden’s Method to find a and b
 
         #inital steps
         resultVector = [0,0] #placeholer
-        pastVector = [0,0] #Going to set the inital values of a =0, and b = 1
+        pastVector = [3,-1] #Going to set the inital values of a =0, and b = 1
 
         fVector = []
         pastFVector = [calFFunc(pastVector,setX,setY,0),calFFunc(pastVector,setX,setY,1)]
@@ -82,12 +98,12 @@ class logReg:
                         [calKFunc(pastVector,setX,0),calKFunc(pastVector,setX,1)],
                         [calKFunc(pastVector,setX,1),calKFunc(pastVector,setX,2)] ])
         
-        f.write("PAST A {}\n".format(pastAMatrix))
+        # f.write("PAST A {}\n".format(pastAMatrix))
         buffer = np.matmul(pastAMatrix,np.transpose(pastFVector))
         resultVector = np.subtract(pastVector,buffer)
         #looping begins
-        f.write("INIT RESULT IS {} ".format(resultVector))
-        while error(resultVector,pastVector) > 0.0001:
+        # f.write("INIT RESULT IS {} ".format(resultVector))
+        while error(resultVector,pastVector) > 0.001:
 
             fVector = [calFFunc(resultVector,setX,setY,0),calFFunc(resultVector,setX,setY,1)]
             r = np.subtract(fVector,pastFVector)
@@ -98,20 +114,20 @@ class logReg:
             pastAMatrix = aMatrix[:]
             pastFVector = fVector[:]
             buffer = np.matmul(aMatrix,np.transpose(fVector))
-            print(buffer)
+            # print(buffer)
             resultVector = np.subtract(resultVector,buffer)
 
-            print("ERROR", error(resultVector,pastVector))
+            # print("ERROR", error(resultVector,pastVector))
             print("F VECTOR",fVector[0], " ", fVector[1])
-            print("RESULT VECTOR",resultVector, " ", error(resultVector,pastVector))
-            f.write("ERROR {}\n".format(error(resultVector,pastVector)))
-            f.write("F VECTOR {} {}\n".format(fVector[0],fVector[1]))
-            f.write("RESULT VECTOR{}\n".format(resultVector))
-            f.write("----------------\n")
+            # print("RESULT VECTOR",resultVector, " ", error(resultVector,pastVector))
+            # f.write("ERROR {}\n".format(error(resultVector,pastVector)))
+            # f.write("F VECTOR {} {}\n".format(fVector[0],fVector[1]))
+            # f.write("RESULT VECTOR{}\n".format(resultVector))
+            # f.write("----------------\n")
         print(resultVector, " ", error(resultVector,pastVector))
 
-
-logReg.basic(X,Y)
+temp = turnToSets(sigma.sigmaSet.basic(5.657,-1.429,1000,-10,20))
+logReg.basic(temp[0],temp[1])
 
 
              
