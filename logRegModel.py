@@ -31,6 +31,52 @@ except ImportError:
 X = [0.5,.75,1,1.25,1.5,1.75,1.75,2,2.25,2.5,2.75,3,3.25,3.50,4,4.25,4.5,4.75,5,5.5]
 Y = [0,0,0,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1]
 
+def initPrediction(setX,setY):
+    #Given the raw data make a crude guess on the parameters of the sigma function
+
+    #S can either be -1,0,1
+    #   -1: if more 1's appear earlier on
+    #   0: if evenly spread out
+    #   1: if more 1's later on
+    s =0;
+    u=0;
+    numOfOnesE =0
+    numOfOnesL=0
+
+    earliestZero = len(setY)-1
+    latestZero = 0
+    earliestOne = len(setY)-1
+    latestOne = 0
+
+    for i in range(len(setY)):
+
+        if i < len(setY)/2 and setY[i] == 1:
+            numOfOnesE +=1
+        elif i >= len(setY)/2 and setY[i] == 1:
+            numOfOnesL +=1
+
+        if setY[i] == 0:
+            earliestZero = i if (i < earliestZero) else earliestZero
+            latestZero = i if (i > latestZero) else latestZero
+
+        elif setY[i] ==1:
+            earliestOne = i if (i < earliestOne) else earliestOne
+            latestOne = i if (i > latestOne) else latestOne
+
+
+    if numOfOnesE> numOfOnesL:
+        s = -1
+        u = (setX[earliestZero] + setX[latestOne])/2
+    elif numOfOnesE < numOfOnesL:
+        s = 1
+        u = (setX[latestZero] + setX[earliestOne])/2
+
+    else:
+        u = (setX[0] + setX[-1])/2
+
+
+    return [(-1*u/s),1/s]
+
 def turnToSets(data):
     result = [[] for i in range(len(data[0]))]
     for i in range(0,len(data)):
@@ -88,7 +134,8 @@ class logReg:
 
         #inital steps
         resultVector = [0,0] #placeholer
-        pastVector = [3,-1] #Going to set the inital values of a =0, and b = 1
+        pastVector = initPrediction(setX,setY) #Going to set the inital values of a =0, and b = 1
+        print("PAST VECTOR:",pastVector)
 
         fVector = []
         pastFVector = [calFFunc(pastVector,setX,setY,0),calFFunc(pastVector,setX,setY,1)]
@@ -103,7 +150,7 @@ class logReg:
         resultVector = np.subtract(pastVector,buffer)
         #looping begins
         # f.write("INIT RESULT IS {} ".format(resultVector))
-        while error(resultVector,pastVector) > 0.001:
+        while error(resultVector,pastVector) > 0.0000001:
 
             fVector = [calFFunc(resultVector,setX,setY,0),calFFunc(resultVector,setX,setY,1)]
             r = np.subtract(fVector,pastFVector)
@@ -119,14 +166,14 @@ class logReg:
 
             # print("ERROR", error(resultVector,pastVector))
             print("F VECTOR",fVector[0], " ", fVector[1])
-            # print("RESULT VECTOR",resultVector, " ", error(resultVector,pastVector))
+            print("RESULT VECTOR",resultVector, " ", error(resultVector,pastVector))
             # f.write("ERROR {}\n".format(error(resultVector,pastVector)))
             # f.write("F VECTOR {} {}\n".format(fVector[0],fVector[1]))
             # f.write("RESULT VECTOR{}\n".format(resultVector))
             # f.write("----------------\n")
         print(resultVector, " ", error(resultVector,pastVector))
 
-temp = turnToSets(sigma.sigmaSet.basic(5.657,-1.429,1000,-10,20))
+temp = turnToSets(sigma.sigmaSet.basic(-5.657,6.429,100000,-100,100))
 logReg.basic(temp[0],temp[1])
 
 
